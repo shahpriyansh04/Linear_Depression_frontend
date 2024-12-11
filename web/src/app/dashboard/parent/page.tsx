@@ -27,9 +27,27 @@ import {
 import { AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { useState, useEffect } from 'react'
 import { UserCircle, Bell, Calendar, BookOpen, Users, Clock,TrendingUp, Award, MessageCircle, ChevronRight } from 'lucide-react'
 
 export default function ParentDashboard() {
+
+    const [studentData, setStudentData] = useState(null);
+
+    useEffect(() => {
+      // Fetch student data as soon as the page loads
+      const fetchStudentData = async () => {
+        try {
+          const response = await fetch('/api/student'); // Replace with your API endpoint
+          const data = await response.json();
+          setStudentData(data);
+        } catch (error) {
+          console.error('Error fetching student data:', error);
+        }
+      };
+  
+      fetchStudentData();
+    }, []);
   // Performance Trend Data
   const performanceData = [
     { month: 'Apr', score: 65 },
@@ -97,6 +115,16 @@ export default function ParentDashboard() {
             </div>
           </CardContent>
         </Card>
+    
+      {studentData?.dropout && (
+        <Card className="col-span-full bg-red-500 text-center shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-gray-800">Your child is at risk of dropping out!</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center space-x-8">
+          </CardContent>
+        </Card>
+      )}
 
         {/* Recent Notifications Section */}
         <Card className="col-span-full lg:col-span-2 bg-white shadow-lg">
