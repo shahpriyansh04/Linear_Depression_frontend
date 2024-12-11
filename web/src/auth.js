@@ -22,8 +22,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         } else {
           throw new Error("Invalid role");
         }
-
-        // Prepare the request body
+        console.log(endpoint);
+        //Prepare the request body
         const bodyContent = JSON.stringify({
           email: credentials.email,
           password: credentials.password,
@@ -47,7 +47,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         console.log(data);
 
         // Return user data if authentication is successful
-        return data.data || null;
+        return data.data;
       },
     }),
   ],
