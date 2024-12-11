@@ -43,7 +43,8 @@ export default function ParentCommunication() {
   const [newMessage, setNewMessage] = useState('')
   const { data: session } = useSession()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-
+  console.log(session?.user);
+  
   // Predefined teachers list
   const teachers: Teacher[] = [
     { id: "1", name: "Mrs. Sharma", subject: "Mathematics", lastMessage: "2 hours ago" },
@@ -57,7 +58,7 @@ export default function ParentCommunication() {
     if (!session?.user?.token) return;
 
     try {
-      const response = await axios.get(`http://localhost:4000/get-my-chat/8/${teacherId}`, {
+      const response = await axios.get(`http://localhost:8000/get-my-chat/8/${teacherId}`, {
         headers: {
           Authorization: `Bearer ${session.user.token}`,
         }

@@ -49,7 +49,7 @@ export default function TeacherCommunication() {
     if (!session?.user?.token) return;
 
     try {
-      const response = await axios.get(`http://localhost:4000/get-my-chat/1/${parentId}`, {
+      const response = await axios.get(`http://localhost:8000/get-my-chat/1/${parentId}`, {
         headers: {
           Authorization: `Bearer ${session.user.token}`,
         }
