@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -13,9 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useRouter } from 'next/navigation'
 
 // Mock data for teacher's dashboard
 const teacherName = 'Ms. Sharma'
+
 const classesData = [
   { name: 'Mathematics 101', students: 30, averageGrade: 85, attendance: 92 },
   { name: 'Advanced Algebra', students: 25, averageGrade: 78, attendance: 88 },
@@ -23,9 +25,9 @@ const classesData = [
 ]
 
 const atRiskStudents = [
-  { id: 1, name: 'Vedica Mrudul', grade: 65, attendance: 70, reason: 'Low grades and attendance' },
-  { id: 2, name: 'Yug Gupta', grade: 68, attendance: 75, reason: 'Struggling with recent topics' },
-  { id: 3, name: 'Priyansh Shah', grade: 72, attendance: 68, reason: 'Frequent absences' },
+  { id: "1", name: 'Vedica Mrudul', grade: 65, attendance: 70, reason: 'Low grades and attendance', parentId:"8" },
+  { id: "2", name: 'Yug Gupta', grade: 68, attendance: 75, reason: 'Struggling with recent topics', parentId:"9" },
+  { id: "3", name: 'Priyansh Shah', grade: 72, attendance: 68, reason: 'Frequent absences', parentId:"10" },
 ]
 
 const overallClassProgress = [
@@ -73,6 +75,8 @@ export default function TeacherDashboard() {
   const [assignments, setAssignments] = useState(initialAssignments)
   const [newAssignment, setNewAssignment] = useState({ title: '', class: '', dueDate: '' })
   const [isNewAssignmentDialogOpen, setIsNewAssignmentDialogOpen] = useState(false)
+  const [studentData, setStudentData] = useState([]);
+  const router=useRouter();
 
   const handleCreateAssignment = () => {
     if (newAssignment.title && newAssignment.class && newAssignment.dueDate) {
@@ -82,6 +86,21 @@ export default function TeacherDashboard() {
     }
   }
 
+
+  const handleContactParents = (Parentid: string) => {
+    router.push(`/dashboard/teacher/communication?Parentid=${Parentid}`)
+  }
+
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       const response = await fetch('/api/students');
+//       const data = await response.json();
+//       setStudentData(data);
+//     };
+//     fetchData();
+//   })
+    
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-8">
@@ -101,8 +120,8 @@ export default function TeacherDashboard() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Grade</TableHead>
-                  <TableHead>Attendance</TableHead>
+                  {/* <TableHead>Grade</TableHead>
+                  <TableHead>Attendance</TableHead> */}
                   <TableHead>Reason</TableHead>
                   <TableHead>Action</TableHead>
                 </TableRow>
@@ -115,7 +134,7 @@ export default function TeacherDashboard() {
                     <TableCell className="text-red-600">{student.attendance}%</TableCell>
                     <TableCell>{student.reason}</TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">
+                      <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50" onClick={()=>handleContactParents(student.parentId)}>
                         Contact Parents
                       </Button>
                     </TableCell>
@@ -126,78 +145,6 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        {/* <div className="mb-8">
-              <Card className="bg-gradient-to-r from-blue-100 to-purple-100">
-                <CardContent className="flex items-center justify-between p-6">
-                  <div>
-                    <h2 className="mb-2 text-xl font-semibold">
-                      📊 Your Progress
-                    </h2>
-                    <p className="mb-4 text-gray-600">
-                      Great job! You're making excellent progress this semester.
-                    </p>
-                    <div className="mb-4 flex items-center">
-                      <div className="mr-4 text-3xl font-bold text-purple-600">
-                        A-
-                      </div>
-                      <div>
-                        <div className="font-semibold">Overall Grade</div>
-                        <div className="text-sm text-gray-600">
-                          Keep up the good work!
-                        </div>
-                      </div>
-                    </div>
-                    <Button className="bg-purple-600 hover:bg-purple-700">
-                      View Detailed Report
-                    </Button>
-                  </div>
-                  <div className="flex gap-8">
-                    <div className="flex flex-col items-center">
-                      <div className="mb-2 text-2xl font-bold text-purple-600">
-                        🏆
-                      </div>
-                      <div className="text-center text-sm font-semibold">
-                        Recent Achievements
-                      </div>
-                      <div className="text-center text-xs text-gray-600">
-                        Perfect Attendance
-                      </div>
-                      <div className="text-center text-xs text-gray-600">
-                        Science Fair Winner
-                      </div>
-                    </div>{" "}
-                    <div className="flex flex-col items-center">
-                      <div className="mb-2 text-2xl font-bold text-purple-600">
-                        🏆
-                      </div>
-                      <div className="text-center text-sm font-semibold">
-                        Recent Achievements
-                      </div>
-                      <div className="text-center text-xs text-gray-600">
-                        Perfect Attendance
-                      </div>
-                      <div className="text-center text-xs text-gray-600">
-                        Science Fair Winner
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="mb-2 text-2xl font-bold text-purple-600">
-                        🏆
-                      </div>
-                      <div className="text-center text-sm font-semibold">
-                        Recent Achievements
-                      </div>
-                      <div className="text-center text-xs text-gray-600">
-                        Perfect Attendance
-                      </div>
-                      <div className="text-center text-xs text-gray-600">
-                        Science Fair Winner
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div> */}
 
         {/* Class Progress Overview */}
         <div className="mb-8">
