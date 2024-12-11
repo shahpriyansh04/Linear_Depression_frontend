@@ -16,6 +16,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { MessageCircle, Send } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
+
+
 interface Teacher {
   id: string;
   name: string;
@@ -32,6 +34,8 @@ interface Message {
   senderId: string;
   sentTime: string;
 }
+
+
 
 export default function ParentCommunication() {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
