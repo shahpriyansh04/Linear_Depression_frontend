@@ -8,6 +8,10 @@ console.log(API_KEY);
 const genAI = new GoogleGenerativeAI(API_KEY);
 const MODEL_NAME = "gemini-pro";
 
+export const getModel = (name) => {
+  return genAI.getGenerativeModel({ model: name });
+};
+
 export const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 export const generationConfig = {
   temperature: 0,

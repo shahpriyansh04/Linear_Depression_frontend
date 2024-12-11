@@ -47,7 +47,7 @@ export default function ScholarshipSearch() {
   const handleRecommendations = async () => {
     const options = {
       method: "get",
-      url: `http://localhost:5001/student/get-details-for-scholarship-eligibility-prediction/${session?.user?.id}`,
+      url: `http://localhost:8000/student/get-details-for-scholarship-eligibility-prediction/${session?.user?.id}`,
       headers: {
         Accept: "*/*",
         "User-Agent": "Flashpost",

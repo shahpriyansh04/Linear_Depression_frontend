@@ -124,7 +124,7 @@ export default function ChatBox() {
                           <CodeBlock text={code} showLineNumbers={true} />
                           <Link
                             href={{
-                              pathname: "/dashboard/code/code-analyzer",
+                              pathname: "/code/code-analyzer",
                               query: { code: code },
                             }}
                           >

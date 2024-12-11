@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
+import { HoveredLink, Menu, MenuItem, ProductItem } from "./NavbarMenu";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { HoveredLink, Menu, MenuItem } from "./NavbarMenu";
 import { logout } from "@/app/auth/action";
 
 export function NavbarDashboard({ className }: { className?: string }) {
@@ -18,6 +18,9 @@ export function NavbarDashboard({ className }: { className?: string }) {
           <p>UDAAN</p>
         </Link>
         <div className="flex space-x-6">
+          <Link href="/code">
+            <p>Code</p>
+          </Link>
           <Link href="/dashboard/student/live">
             <p>Live Classes</p>
           </Link>
@@ -37,7 +40,7 @@ export function NavbarDashboard({ className }: { className?: string }) {
           <MenuItem setActive={setActive} active={active} item="AI Tools">
             <div className="flex flex-col space-y-4 text-sm">
               <HoveredLink href="/dashboard/student/viva">Viva</HoveredLink>
-              <HoveredLink href="/dashboard/student/viva">Quizes</HoveredLink>
+              <HoveredLink href="/dashboard/student/quizes">Quizes</HoveredLink>
               <HoveredLink href="/dashboard/student/planner">
                 Planner
               </HoveredLink>
@@ -47,8 +50,11 @@ export function NavbarDashboard({ className }: { className?: string }) {
             </div>
           </MenuItem>
         </div>
-
-        <p onClick={async () => await logout()}>Logout {session?.user?.name}</p>
+        {session === undefined ? (
+          <p>Loading...</p>
+        ) : (
+          <p onClick={async () => await logout()}> {session?.user?.name}</p>
+        )}
       </Menu>
     </div>
   );
