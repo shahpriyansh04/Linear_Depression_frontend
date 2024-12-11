@@ -33,7 +33,6 @@ import {
   MessageCircle,
   ChevronRight,
 } from "lucide-react";
-import { logout } from "@/app/auth/action";
 
 export default function ParentDashboard() {
   const [studentData, setStudentData] = useState(null);
@@ -100,7 +99,6 @@ export default function ParentDashboard() {
 
   return (
     <div className="min-h-screen bg-purple-50 p-8">
-      <Button onClick={async () => await logout()}>Logout</Button>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Student Overview Section */}
         <Card className="col-span-full bg-white shadow-lg">
