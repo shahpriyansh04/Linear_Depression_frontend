@@ -1,17 +1,12 @@
-"use client";
-import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
+import { auth } from "@/auth";
 import React from "react";
-import logout from "../auth/action";
+import { redirect } from "next/navigation";
 
-export default function page() {
-  const { data: session } = useSession();
+export default async function page() {
+  const session = await auth();
   console.log(session?.user);
 
-  return (
-    <div>
-      {session?.user.name + " " + session?.user.role}
-      <Button>Logout</Button>
-    </div>
-  );
+  if (session?.user?.role === "student") redirect("/dashboard/student");
+  if (session?.user?.role === "teacher") redirect("/dashboard/teacher");
+  if (session?.user?.role === "parent") redirect("/dashboard/parent");
 }

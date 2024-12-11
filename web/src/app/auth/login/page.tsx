@@ -6,10 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import login from "./action";
+import { useSession } from "next-auth/react";
 
 const tabs = ["Student", "Teacher", "Parent"];
 
 export default function CreativeLogin() {
+  const { data: session } = useSession();
+  console.log(session?.user);
+
   const [activeTab, setActiveTab] = useState(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

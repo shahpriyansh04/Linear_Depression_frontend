@@ -1,5 +1,6 @@
 "use server";
 import { signIn } from "@/auth";
+import { redirect } from "next/navigation";
 
 export default async function login({
   redirectTo,
@@ -25,4 +26,7 @@ export default async function login({
     throw new Error("User does not exist");
   }
   console.log("User logged in successfully");
+
+  // Redirect to the specified URL after successful login
+  redirect(redirectTo);
 }
