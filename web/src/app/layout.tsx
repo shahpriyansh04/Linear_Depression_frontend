@@ -1,6 +1,7 @@
 "use client";
 import { SessionProvider } from "next-auth/react";
 import "./globals.css";
+import { ChatProvider } from "./hooks/useChat";
 
 export default function RootLayout({
   children,
@@ -10,7 +11,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <ChatProvider>{children}</ChatProvider>
+          </SessionProvider>
       </body>
     </html>
   );

@@ -1,8 +1,8 @@
 import type { Config } from "tailwindcss";
 
-const config: Config = {
-    darkMode: ["class"],
-    content: [
+export default {
+  darkMode: ["class"],
+  content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -57,6 +57,14 @@ const config: Config = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		keyframes: {
+  			'caret-blink': {
+  				'0%,70%,100%': {
+  					opacity: '1'
+  				},
+  				'20%,50%': {
+  					opacity: '0'
+  				}
+  			},
   			'accordion-down': {
   				from: {
   					height: '0'
@@ -75,11 +83,33 @@ const config: Config = {
   			}
   		},
   		animation: {
+  			'caret-blink': 'caret-blink 1.25s ease-out infinite',
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
-};
-export default config;
+  plugins: [
+    require("tailwindcss-animate"),
+    ({ addBase, theme }) => {
+      const flattenPalette = (obj: any, prefix = "") =>
+        Object.entries(obj).reduce((acc, [key, value]) => {
+          if (typeof value === "object" && value !== null) {
+            Object.assign(acc, flattenPalette(value, `${prefix}${key}-`));
+          } else {
+            acc[`${prefix}${key}`] = value;
+          }
+          return acc;
+        }, {});
+
+      const allColors = flattenPalette(theme("colors"));
+      const newVars = Object.fromEntries(
+        Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+      );
+
+      addBase({
+        ":root": newVars,
+      });
+    },
+  ],
+} satisfies Config;
