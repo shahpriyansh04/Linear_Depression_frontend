@@ -1,7 +1,7 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-// import { ChatProvider } from "@/hooks/useChat";
+
 import "./globals.css";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { ChatProvider } from "./hooks/useChat";
@@ -15,7 +15,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={` antialiased`}>
         <SessionProvider>
-          {/* <ChatProvider> */}
+          <ChatProvider>
           <ProgressBar
             height="4px"
             color="#000000"
@@ -24,7 +24,7 @@ export default function RootLayout({
           />
           {/* <Navbar /> */}
           {children}
-          {/* </ChatProvider> */}
+          </ChatProvider>
         </SessionProvider>
       </body>
     </html>
