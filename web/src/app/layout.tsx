@@ -1,5 +1,6 @@
 "use client";
 
+import { SessionProvider } from "next-auth/react";
 // import { ChatProvider } from "@/hooks/useChat";
 import "./globals.css";
 
@@ -13,16 +14,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={` antialiased`}>
-        {/* <ChatProvider> */}
-        <ProgressBar
-          height="4px"
-          color="#000000"
-          options={{ showSpinner: false }}
-          shallowRouting
-        />
-        {/* <Navbar /> */}
-        {children}
-        {/* </ChatProvider> */}
+        <SessionProvider>
+          {/* <ChatProvider> */}
+          <ProgressBar
+            height="4px"
+            color="#000000"
+            options={{ showSpinner: false }}
+            shallowRouting
+          />
+          {/* <Navbar /> */}
+          {children}
+          {/* </ChatProvider> */}
+        </SessionProvider>
       </body>
     </html>
   );
