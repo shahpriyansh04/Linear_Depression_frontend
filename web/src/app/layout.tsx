@@ -1,7 +1,7 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-// import { ChatProvider } from "@/hooks/useChat";
+
 import "./globals.css";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { ChatProvider } from "./hooks/useChat";

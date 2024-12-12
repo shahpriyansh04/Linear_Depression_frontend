@@ -306,12 +306,9 @@ export default function TeacherDashboard() {
                     <TableCell className="font-medium">
                       {student.name}
                     </TableCell>
-                    <TableCell className="text-red-600">
-                      {student.grade}%
-                    </TableCell>
-                    <TableCell className="text-red-600">
+                    {/* <TableCell className="text-red-600">
                       {student.attendance}%
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell>{student.reason}</TableCell>
                     <TableCell>
                       <Button
