@@ -58,7 +58,7 @@ export default function ParentCommunication() {
     if (!session?.user?.token) return;
 
     try {
-      const response = await axios.get(`http://localhost:8000/get-my-chat/8/${teacherId}`, {
+      const response = await axios.get(`http://localhost:8000/get-my-chat/${session.user.id}/${parentId}`, {
         headers: {
           Authorization: `Bearer ${session.user.token}`,
         }

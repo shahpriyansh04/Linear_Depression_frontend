@@ -14,20 +14,16 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
+import { useSession } from 'next-auth/react'
 
 // Mock data for teacher's dashboard
-const teacherName = 'Ms. Sharma'
+
 
 const classesData = [
   { name: 'Mathematics 101', students: 30, averageGrade: 85, attendance: 92 },
   { name: 'Advanced Algebra', students: 25, averageGrade: 78, attendance: 88 },
   { name: 'Geometry Basics', students: 28, averageGrade: 82, attendance: 90 },
-]
-
-const atRiskStudents = [
-  { id: "1", name: 'Vedica Mrudul', grade: 65, attendance: 70, reason: 'Low grades and attendance', parentId:"8" },
-  { id: "2", name: 'Yug Gupta', grade: 68, attendance: 75, reason: 'Struggling with recent topics', parentId:"9" },
-  { id: "3", name: 'Priyansh Shah', grade: 72, attendance: 68, reason: 'Frequent absences', parentId:"10" },
 ]
 
 const overallClassProgress = [
@@ -76,7 +72,10 @@ export default function TeacherDashboard() {
   const [newAssignment, setNewAssignment] = useState({ title: '', class: '', dueDate: '' })
   const [isNewAssignmentDialogOpen, setIsNewAssignmentDialogOpen] = useState(false)
   const [studentData, setStudentData] = useState([]);
+  const [atRiskStudents, setAtRiskStudents] = useState([]);
   const router=useRouter();
+  const { data: session } = useSession()
+  const teacherName= session?.user?.name;
 
   const handleCreateAssignment = () => {
     if (newAssignment.title && newAssignment.class && newAssignment.dueDate) {
@@ -87,22 +86,52 @@ export default function TeacherDashboard() {
   }
 
 
-  const handleContactParents = (Parentid: string) => {
-    router.push(`/dashboard/teacher/communication?Parentid=${Parentid}`)
+  const handleContactParents = (parentId: string) => {
+    router.push(`/dashboard/teacher/communication?Parentid=${parentId}`)
+  }
+
+  const handleReportRedirect = (studentId : string) => {
+    console.log(studentId);
+    router.push(`/dashboard/teacher/studentReport/${studentId}`)
   }
 
 
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       const response = await fetch('/api/students');
-//       const data = await response.json();
-//       setStudentData(data);
-//     };
-//     fetchData();
-//   })
-    
+console.log(session?.user?.token+  'joo');
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!session?.user?.token) return;
+
+      try {
+        console.log("here");
+        const response = await axios.get('http://localhost:8000/student/get-all', {
+          headers: {
+            Authorization: `Bearer ${session?.user?.token}`,
+          },
+        });
+        console.log(response.data.data);
+
+        // Filter the data based on teacherId and dropoutRisk
+        const filteredData = response.data.data.filter(student => {
+          if (Array.isArray(student.Teacherid)) {
+            console.log(student.Teacherid);
+            console.log(student.Teacherid.includes(String(session?.user?.id)) && student.dropoutRisk === false);
+            return student.Teacherid.includes(String(session?.user?.id)) && student.dropoutRisk === false;
+          }
+          // Ignore entries where Teacherid is not an array
+          return false;
+        });
+        setAtRiskStudents(filteredData);
+        console.log(filteredData);
+      } catch (error) {
+        console.error('Error fetching chat data:', error);
+      }
+    };
+    fetchData();
+  }, [session?.user?.token]);
+
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-purple-50">
       <div className="p-8">
         <h1 className="text-3xl font-bold mb-8 text-purple-800">
           👋 Welcome, {teacherName}!
@@ -123,16 +152,14 @@ export default function TeacherDashboard() {
                   {/* <TableHead>Grade</TableHead>
                   <TableHead>Attendance</TableHead> */}
                   <TableHead>Reason</TableHead>
-                  <TableHead>Action</TableHead>
+                  {/* <TableHead>Action</TableHead> */}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {atRiskStudents.map((student) => (
-                  <TableRow key={student.id} className="hover:bg-red-50">
-                    <TableCell className="font-medium">{student.name}</TableCell>
-                    <TableCell className="text-red-600">{student.grade}%</TableCell>
-                    <TableCell className="text-red-600">{student.attendance}%</TableCell>
-                    <TableCell>{student.reason}</TableCell>
+                  <TableRow  key={student.id} className="hover:bg-red-50">
+                    <TableCell onClick={()=> handleReportRedirect(student._id)} className="font-medium">{student.name}</TableCell>
+                    <TableCell>{student.dropoutReason}</TableCell>
                     <TableCell>
                       <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50" onClick={()=>handleContactParents(student.parentId)}>
                         Contact Parents
@@ -498,4 +525,3 @@ export default function TeacherDashboard() {
     </div>
   )
 }
-

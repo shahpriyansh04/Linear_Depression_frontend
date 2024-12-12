@@ -16,6 +16,7 @@ import { MessageCircle, Send } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 
+
 interface ParentChat {
   id: string;
   name: string;
@@ -31,6 +32,8 @@ interface Message {
   sentTime: string;
 }
 
+
+
 export default function TeacherCommunication() {
   const [selectedParent, setSelectedParent] = useState<ParentChat | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -38,6 +41,7 @@ export default function TeacherCommunication() {
   const { data: session } = useSession()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams();
+  const [parent,setParent]=useState([]);
 
   // Hardcoded parents for demo (replace with actual data fetch)
   const parents: ParentChat[] = [
@@ -49,7 +53,7 @@ export default function TeacherCommunication() {
     if (!session?.user?.token) return;
 
     try {
-      const response = await axios.get(`http://localhost:8000/get-my-chat/1/${parentId}`, {
+      const response = await axios.get(`http://localhost:8000/get-my-chat/${session.user.id}/${parentId}`, {
         headers: {
           Authorization: `Bearer ${session.user.token}`,
         }
@@ -81,7 +85,7 @@ export default function TeacherCommunication() {
 
     try {
       await axios.post('http://localhost:8000/send-chat', {
-        senderId: "1", // Teacher's ID
+        senderId: `${session.user.id}`, // Teacher's ID
         receiverId: selectedParent.id,
         messageContent: newMessage
       }, {
@@ -101,6 +105,24 @@ export default function TeacherCommunication() {
     return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  
+  
+    useEffect(()=>{
+      axios.get('http://localhost:8000/student/get-all')
+      .then((res)=>{
+        setAllStudentData(res.data)
+        console.log(res.data + "res.data")
+  
+        // Filter the data based on teacherId and dropoutRisk
+        const filteredData = res.data.filter(student => 
+          student.teacherId === session?.user?.id && student.dropoutRisk === true
+        );
+        setAtRiskStudents(filteredData);
+      })
+      .catch((err)=>{
+        console.log(err)
+      })
+    },[])
   useEffect(() => {
     // Read the `parentid` query parameter
     const parentIdFromQuery = searchParams.get('parentid');

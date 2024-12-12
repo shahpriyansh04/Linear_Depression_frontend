@@ -1,38 +1,39 @@
-"use client";
+'use client'
 import React, { useState } from "react";
 import { HoveredLink, Menu, MenuItem, ProductItem } from "./NavbarMenu";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { logout } from "@/app/auth/action";
-import { useRouter } from "next/router";
-import Router from "next/router";
+import { useRouter } from "next/navigation";
+
 
 export function NavbarDashboard({ className }: { className?: string }) {
   const { data: session } = useSession();
+  const router=useRouter();
   const [active, setActive] = useState<string | null>(null);
   console.log(session?.user);
   
-  const handleLogout = () => {
-    logout();
-    Router.push("/auth/login");
+  const handleLogout = async () => {
+    await logout();
+    router.push("/auth/login");
   }
   return (
     <div
       className={cn("fixed top-10 inset-x-0 max-w-2xl mx-auto z-50", className)}
     >
       <Menu setActive={setActive}>
-        <Link href="/dashboard/student">
+        <Link href="/dashboard/teacher">
           <p>UDAAN</p>
         </Link>
         <div className="flex space-x-6">
-          <Link href="/dashboard/student/live">
+          <Link href="/dashboard/teacher">
             <p>Live Classes</p>
           </Link>
-          <Link href="/dashboard/student/wellbeing">
-            <p>Student details</p>
+          <Link href="/dashboard/teacher">
+            <p>Communication</p>
           </Link>
-          <Link href="/dashboard/student/wellbeing" onClick={handleLogout}>
+          <Link href="/auth/login" onClick={handleLogout}>
             <p>Logout</p>
           </Link>
           {/* <MenuItem setActive={setActive} active={active} item="Financial Aid">
@@ -61,7 +62,7 @@ export function NavbarDashboard({ className }: { className?: string }) {
         {session === undefined ? (
           <p>Loading...</p>
         ) : (
-          <p onClick={logout}> {session?.user?.name}</p>
+          <p onClick={handleLogout}> {session?.user?.name}</p>
         )}
       </Menu>
     </div>
