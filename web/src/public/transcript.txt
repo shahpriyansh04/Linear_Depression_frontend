@@ -1,0 +1,58 @@
+Teacher:
+“Good morning, class! Today, we are going to dive into the exciting world of Linear Equations in Two Variables. Can anyone tell me what a linear equation is?”
+
+Student 1:
+“Sir, it’s an equation where the highest power of the variable is one.”
+
+Teacher:
+“Excellent! That’s correct. A linear equation is of the form  ax + by + c = 0 , where  a ,  b , and  c  are constants, and  x  and  y  are variables. Now, can someone give me an example of such an equation?”
+
+Student 2:
+“How about  2x + 3y = 6 ?”
+
+Teacher:
+“Perfect! That’s a great example. In this case,  a = 2 ,  b = 3 , and  c = -6 . Now, let’s talk about how we can solve these equations. There are several methods like substitution, elimination, and graphical representation. Today, we’ll focus on the graphical method.”
+
+The teacher writes  x + y = 4  on the board.
+
+Teacher:
+“Let’s solve this equation by finding two points. If  x = 0 , what’s  y ?”
+
+Student 3:
+“If  x = 0 , then  y = 4 .”
+
+Teacher:
+“Correct! So, the first point is  (0, 4) . Now, if  y = 0 , what’s  x ?”
+
+Student 4:
+“If  y = 0 , then  x = 4 .”
+
+Teacher:
+“Right again! Our second point is  (4, 0) . Now we plot these two points on the graph and draw a straight line passing through them. This line represents all the solutions of the equation  x + y = 4 .”
+
+The teacher draws the graph on the board.
+
+Teacher:
+“Notice how the line extends infinitely in both directions? That’s because there are infinite solutions to this equation. Every point on this line satisfies  x + y = 4 . Let’s try one more example as a class activity. Solve  2x - y = 3  using the graphical method.”
+
+Students start working on the problem.
+
+Teacher:
+“While you work on that, let’s discuss the real-life applications of linear equations. For instance, they are used in calculating budgets, analyzing data trends, and even in construction work. Can anyone think of another example?”
+
+Student 5:
+“Maybe for splitting a bill between friends?”
+
+Teacher:
+“Exactly! Linear equations are everywhere, even in day-to-day tasks. Alright, time’s up! Let’s review your solutions. Who would like to present their graph?”
+
+Student 6 comes to the board and explains their solution.
+
+Teacher:
+“Good job! You’ve understood the concept well. For homework, please solve the problems on page 45 of your textbook and plot the graphs. We’ll discuss any difficulties tomorrow. Any questions before we wrap up?”
+
+Student 7:
+“Sir, what if the coefficients of  x  and  y  are zero?”
+
+Teacher:
+“That’s a great question! If both coefficients are zero, the equation becomes constant and doesn’t depend on  x  or  y . For example,  0x + 0y = 5  has no solution because  0 \neq 5 . We’ll explore more such cases later. Alright, class dismissed. Have a great day!”

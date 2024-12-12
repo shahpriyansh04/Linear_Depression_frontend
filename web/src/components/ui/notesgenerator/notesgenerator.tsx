@@ -75,7 +75,6 @@ export default function NotesGenerator() {
       setAllNotes(JSON.parse(savedNotes));
     }
   }, []);
-
   const saveNote = (
     type: "upload" | "youtube" | "lecture" | "custom",
     content: string,
@@ -114,6 +113,49 @@ export default function NotesGenerator() {
     }
   };
 
+  const generatePDF = (content: string, title: string) => {
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+    });
+
+    // Set font
+    pdf.setFontSize(12);
+
+    // Add title
+    pdf.setFontSize(16);
+    pdf.text(title || "Notes", 10, 10);
+
+    // Add a line under the title
+    pdf.setLineWidth(0.5);
+    pdf.line(10, 15, 200, 15);
+
+    // Reset font size for content
+    pdf.setFontSize(10);
+
+    // Convert content to plain text with better formatting
+    const plainTextContent = content
+      .replace(/^#+\s*/gm, "") // Remove headers
+      .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold formatting
+      .replace(/\*(.*?)\*/g, "$1") // Remove italic formatting
+      .replace(/`(.*?)`/g, "$1") // Remove code formatting
+      .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Convert links to link text
+      .replace(/^\s*[-*]\s*/gm, "• ") // Convert list markers
+      .replace(/\n{3,}/g, "\n\n"); // Normalize multiple newlines
+
+    // Split text with proper word wrapping
+    const splitText = pdf.splitTextToSize(plainTextContent, 180);
+
+    // Add text with automatic page breaking
+    pdf.text(splitText, 15, 25);
+
+    // Save PDF with a more robust method
+    const pdfDataUri = pdf.output("datauristring");
+    return pdfDataUri;
+  };
+
+  // Update handleFileUpload method
   const handleFileUpload = async () => {
     if (!pdfFile) {
       alert("No PDF file selected.");
@@ -121,17 +163,29 @@ export default function NotesGenerator() {
     }
 
     const formData = new FormData();
-    formData.append("file", pdfFile);
+    formData.append("pdf_file", pdfFile);
 
     try {
-      const response = await axios.post("backend-url/upload", formData, {
-        responseType: "blob",
-      });
+      const response = await axios.post(
+        "http://localhost:5001/generate_notes_final",
+        formData,
+        {
+          responseType: "blob",
+        }
+      );
 
       const pdfBlob = new Blob([response.data], { type: "application/pdf" });
       const pdfUrl = URL.createObjectURL(pdfBlob);
-      const content = await response.data.text();
-      saveNote("upload", content, pdfUrl);
+
+      // Read the content of the PDF
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const content = e.target?.result as string;
+        const generatedPdfUrl = generatePDF(content, noteTitle);
+
+        saveNote("upload", JSON.parse(content).notes, generatedPdfUrl);
+      };
+      reader.readAsText(response.data);
 
       alert("PDF uploaded and processed successfully!");
     } catch (error) {
@@ -140,6 +194,7 @@ export default function NotesGenerator() {
     }
   };
 
+  // Similar modifications for handleYoutubeSubmit and handleLectureNotesSubmit
   const handleYoutubeSubmit = async () => {
     try {
       const response = await axios.post(
@@ -147,162 +202,47 @@ export default function NotesGenerator() {
         { youtube_url: youtubeLink },
         { responseType: "json" }
       );
-      console.log(response);
 
       const content = response.data.notes;
+      const generatedPdfUrl = generatePDF(content, noteTitle);
 
-      // Create PDF with better formatting
-      const pdf = new jsPDF({
-        orientation: "p",
-        unit: "mm",
-        format: "a4",
-      });
-
-      // Set font
-      pdf.setFontSize(12);
-
-      // Add title
-      pdf.setFontSize(16);
-      pdf.text(noteTitle || "YouTube Notes", 10, 10);
-
-      // Add a line under the title
-      pdf.setLineWidth(0.5);
-      pdf.line(10, 15, 200, 15);
-
-      // Reset font size for content
-      pdf.setFontSize(10);
-
-      // Convert Markdown to plain text
-      const plainTextContent = content
-        .replace(/^#+\s*/gm, "") // Remove headers
-        .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold formatting
-        .replace(/\*(.*?)\*/g, "$1") // Remove italic formatting
-        .replace(/`(.*?)`/g, "$1") // Remove code formatting
-        .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Convert links to link text
-        .replace(/^\s*[-*]\s*/gm, "• ") // Convert list markers
-        .replace(/\n{3,}/g, "\n\n"); // Normalize multiple newlines
-
-      // Split text with proper word wrapping
-      const splitText = pdf.splitTextToSize(plainTextContent, 180);
-
-      // Add text with automatic page breaking
-      pdf.text(splitText, 15, 25);
-
-      // Auto-generate additional pages if content is long
-      let finalY = 25 + splitText.length * 5; // Estimate text height
-      if (finalY > 280) {
-        // If content exceeds page, add new pages
-        while (finalY > 280) {
-          pdf.addPage();
-          finalY -= 280;
-        }
-      }
-
-      // Save PDF
-      const pdfBlob = pdf.output("blob");
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      saveNote("youtube", content, pdfUrl);
-
+      saveNote("youtube", content, generatedPdfUrl);
       alert("YouTube video processed successfully!");
     } catch (error) {
       console.log("Error processing YouTube video:", error);
       alert("Failed to process the YouTube video.");
     }
   };
+
   const handleLectureNotesSubmit = async () => {
     try {
-      // const response = await axios.post(
-      //   "http://localhost:5001/lecture_notes",
-      //   { transcripts: `` },
-      //   { responseType: "json" }
-      // );
+      const fileresponse = await fetch("/transcript.txt");
+      if (!fileresponse.ok) {
+        throw new Error("Failed to fetch the transcript");
+      }
+      const transcriptContent = await fileresponse.text();
 
-     // Fetch the transcript data
-     const fileresponse = await fetch("/transcript.txt");
-     if (!fileresponse.ok) {
-       throw new Error("Failed to fetch the transcript");
-     }
-     const transcriptContent = await fileresponse.text();
-
-     // Send the fetched transcript content in the POST request
-     const response = await axios.post(
-       "http://localhost:5001/lecture_notes",
-       { transcripts: transcriptContent },
-       { responseType: "json" }
-     );
-
-    
-
-     // Optionally log the response or handle it further
-      console.log(response);
+      const response = await axios.post(
+        "http://localhost:5001/lecture_notes",
+        { transcripts: transcriptContent },
+        { responseType: "json" }
+      );
 
       const content = response.data.notes;
+      const generatedPdfUrl = generatePDF(content, noteTitle);
 
-      // Create PDF with better formatting
-      const pdf = new jsPDF({
-        orientation: "p",
-        unit: "mm",
-        format: "a4",
-      });
-
-      // Set font
-      pdf.setFontSize(12);
-
-      // Add title
-      pdf.setFontSize(16);
-      pdf.text(noteTitle || "Lecture Notes", 10, 10);
-
-      // Add a line under the title
-      pdf.setLineWidth(0.5);
-      pdf.line(10, 15, 200, 15);
-
-      // Reset font size for content
-      pdf.setFontSize(10);
-
-      // Convert Markdown to plain text
-      const plainTextContent = content
-        .replace(/^#+\s*/gm, "") // Remove headers
-        .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold formatting
-        .replace(/\*(.*?)\*/g, "$1") // Remove italic formatting
-        .replace(/`(.*?)`/g, "$1") // Remove code formatting
-        .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Convert links to link text
-        .replace(/^\s*[-*]\s*/gm, "• ") // Convert list markers
-        .replace(/\n{3,}/g, "\n\n"); // Normalize multiple newlines
-
-      // Split text with proper word wrapping
-      const splitText = pdf.splitTextToSize(plainTextContent, 180);
-
-      // Add text with automatic page breaking
-      pdf.text(splitText, 15, 25);
-
-      // Auto-generate additional pages if content is long
-      let finalY = 25 + splitText.length * 5; // Estimate text height
-      if (finalY > 280) {
-        // If content exceeds page, add new pages
-        while (finalY > 280) {
-          pdf.addPage();
-          finalY -= 280;
-        }
-      }
-
-      // Save PDF
-      const pdfBlob = pdf.output("blob");
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      saveNote("lecture", content, pdfUrl);
-
-      alert("YouTube video processed successfully!");
+      saveNote("lecture", content, generatedPdfUrl);
+      alert("Lecture notes processed successfully!");
     } catch (error) {
       console.log("Error processing Lecture notes:", error);
       alert("Failed to process the Lecture notes.");
     }
   };
 
+  // Update handleCustomNotesGenerate
   const handleCustomNotesGenerate = () => {
-    const pdf = new jsPDF();
-    pdf.text(customNotes, 10, 10);
-    const pdfBlob = pdf.output("blob");
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    saveNote("custom", customNotes, pdfUrl);
+    const generatedPdfUrl = generatePDF(customNotes, noteTitle);
+    saveNote("custom", customNotes, generatedPdfUrl);
     alert("Custom notes generated successfully!");
   };
 

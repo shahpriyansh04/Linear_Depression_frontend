@@ -9,13 +9,13 @@ import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import Link from "next/link";
-import { headers } from "next/headers";
 
 export default function ScholarshipSearch() {
   const { data: session } = useSession();
   console.log(session?.user);
   const [scholarships, setScholarships] = useState([]);
   const [filteredScholarships, setFilteredScholarships] = useState([]);
+  const [recommendedScholarships, setRecommendedScholarships] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   const getScholarships = async () => {
@@ -46,14 +46,12 @@ export default function ScholarshipSearch() {
 
   const handleRecommendations = async () => {
     const options = {
-      method: "get",
-      url: `http://localhost:8000/student/get-details-for-scholarship-eligibility-prediction/${session?.user?.id}`,
+      method: "post",
+      url: "http://localhost:5001/recommend_scholarship",
       headers: {
         Accept: "*/*",
-        "User-Agent": "Flashpost",
         "Content-Type": "application/json",
-        Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzU5YzI4M2MxMmY2NjA1MDNkN2FiMGIiLCJuYW1lIjpudWxsLCJlbWFpbCI6ImR1bW15QGV4YW1wbGUuY29tIiwiaWF0IjoxNzMzOTM1ODU4LCJleHAiOjE3NjU0NzE4NTh9.mM3uYpCzRVnDrQeTsq_acB6yIPq3jVVZ0k5Yj_NeWS0",
+        Authorization: `Bearer ${session?.user?.token}`, // Assuming the token is stored in session.user.token
       },
     };
 
@@ -61,6 +59,7 @@ export default function ScholarshipSearch() {
       .request(options)
       .then(function (response) {
         console.log(response.data);
+        setRecommendedScholarships(response.data);
       })
       .catch(function (error) {
         console.log(error);
@@ -104,36 +103,85 @@ export default function ScholarshipSearch() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredScholarships.map((scholarship, index) => (
-            <Card
-              key={index}
-              className={`flex flex-col p-1 overflow-hidden ${scholarship.bgColor} transition-all duration-300 hover:shadow-lg h-full`}
-            >
-              <CardContent className="flex-grow p-6 flex flex-col">
-                <h2 className="mb-2 text-2xl font-semibold tracking-tight text-purple-900">
-                  {scholarship["Scholarship Name"]}
-                </h2>
-                <p className="mb-4 text-sm text-purple-700 flex-grow">
-                  {scholarship.Description}
-                </p>
+          {recommendedScholarships.length > 0
+            ? recommendedScholarships.map((scholarship, index) => (
+                <Card
+                  key={index}
+                  className={`flex flex-col p-1 overflow-hidden ${scholarship.bgColor} transition-all duration-300 hover:shadow-lg h-full`}
+                >
+                  <CardContent className="flex-grow p-6 flex flex-col">
+                    <h2 className="mb-2 text-2xl font-semibold tracking-tight text-purple-900">
+                      {scholarship.Scholarship}
+                    </h2>
+                    {/* <p className="mb-4 text-sm text-purple-700 flex-grow">
+                      {scholarship.Criteria}
+                    </p> */}
 
-                <div className="mb-4 flex items-center justify-between text-sm text-purple-700">
-                  <div className="flex items-center">
-                    <Clock className="mr-1 h-4 w-4" />
-                    Start Date from : {scholarship["Start Date From"]}
-                  </div>
-                  <div className="font-semibold">
-                    Amount: {scholarship["Scholarship Amount (INR)"]}
-                  </div>
-                </div>
-                <Link href={scholarship.link} target="_blank">
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700 mt-auto">
-                    Apply Now
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
+                    <div className="mb-4 flex items-center justify-between text-sm text-purple-700">
+                      <div className="flex items-center">
+                        <Clock className="mr-1 h-4 w-4" />
+                        Start Date from : {scholarship["Start Date From"]}
+                      </div>
+                      <div className="font-semibold">
+                        Amount: {scholarship["Scholarship Amount (INR)"]}
+                      </div>
+                    </div>
+                    {scholarship.link ? (
+                      <Link href={scholarship.link} target="_blank">
+                        <Button className="w-full bg-purple-600 hover:bg-purple-700 mt-auto">
+                          Apply Now
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button
+                        className="w-full bg-purple-600 hover:bg-purple-700 mt-auto"
+                        disabled
+                      >
+                        No Link Available
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            : filteredScholarships.map((scholarship, index) => (
+                <Card
+                  key={index}
+                  className={`flex flex-col p-1 overflow-hidden ${scholarship.bgColor} transition-all duration-300 hover:shadow-lg h-full`}
+                >
+                  <CardContent className="flex-grow p-6 flex flex-col">
+                    <h2 className="mb-2 text-2xl font-semibold tracking-tight text-purple-900">
+                      {scholarship["Scholarship Name"]}
+                    </h2>
+                    <p className="mb-4 text-sm text-purple-700 flex-grow">
+                      {scholarship.Description}
+                    </p>
+
+                    <div className="mb-4 flex items-center justify-between text-sm text-purple-700">
+                      <div className="flex items-center">
+                        <Clock className="mr-1 h-4 w-4" />
+                        Start Date from : {scholarship["Start Date From"]}
+                      </div>
+                      <div className="font-semibold">
+                        Amount: {scholarship["Scholarship Amount (INR)"]}
+                      </div>
+                    </div>
+                    {scholarship.link ? (
+                      <Link href={scholarship.link} target="_blank">
+                        <Button className="w-full bg-purple-600 hover:bg-purple-700 mt-auto">
+                          Apply Now
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button
+                        className="w-full bg-purple-600 hover:bg-purple-700 mt-auto"
+                        disabled
+                      >
+                        No Link Available
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
         </div>
       </div>
     </div>

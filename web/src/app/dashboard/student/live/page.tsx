@@ -68,13 +68,13 @@ export default function Home() {
         </Link>
       )}
 
-      <div className="grid grid-cols-2 gap-6">
+      {/* <div className="grid grid-cols-2 gap-6">
         {lectures.map((lecture: any) => (
           <div className="mt-12 w-96 h-96">
             <video className="" controls src={lecture.url}></video>
           </div>
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }
