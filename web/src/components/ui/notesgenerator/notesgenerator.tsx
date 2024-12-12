@@ -37,6 +37,7 @@ import {
 import { SparklesCore } from "@/components/ui/sparkles";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 type Note = {
   id: string;
@@ -68,13 +69,63 @@ export default function NotesGenerator() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Load all notes from local storage
-    // ig baadme backend se fetch karke display kar sakte hai.
     const savedNotes = localStorage.getItem("allNotes");
     if (savedNotes) {
       setAllNotes(JSON.parse(savedNotes));
     }
   }, []);
+
+  const generatePDF = (content: string, title: string) => {
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+    });
+
+    pdf.setFontSize(12);
+    pdf.setFontSize(16);
+    pdf.text(title || "Notes", 10, 10);
+
+    pdf.setLineWidth(0.5);
+    pdf.line(10, 15, 200, 15);
+
+    pdf.setFontSize(10);
+
+    const markdownToPlainText = (markdown: string) => {
+      // Remove code blocks
+      markdown = markdown.replace(/```[\s\S]*?```/g, (match) =>
+        match.replace(/^```.*\n/, "").replace(/```$/, "")
+      );
+
+      // Convert headers
+      markdown = markdown.replace(/^# (.+)$/gm, (match, p1) => `${p1}`);
+      markdown = markdown.replace(/^## (.+)$/gm, (match, p1) => `${p1}`);
+
+      // Convert bold and italic
+      markdown = markdown.replace(/\*\*(.*?)\*\*/g, (match, p1) => `${p1}`);
+      markdown = markdown.replace(/\*(.*?)\*/g, (match, p1) => `${p1}`);
+
+      // Convert links
+      markdown = markdown.replace(
+        /\[(.*?)\]\((.*?)\)/g,
+        (match, text, url) => `${text} (${url})`
+      );
+
+      // Convert lists
+      markdown = markdown.replace(/^- /gm, "• ");
+      markdown = markdown.replace(/^  - /gm, "   ◦ ");
+
+      return markdown;
+    };
+
+    const formattedContent = markdownToPlainText(content);
+
+    const lines = pdf.splitTextToSize(formattedContent, 180);
+    pdf.text(lines, 10, 20);
+
+    const pdfDataUri = pdf.output("datauristring");
+    return pdfDataUri;
+  };
   const saveNote = (
     type: "upload" | "youtube" | "lecture" | "custom",
     content: string,
@@ -85,10 +136,13 @@ export default function NotesGenerator() {
       return;
     }
 
+    const noteContent =
+      typeof content === "string" ? content : JSON.stringify(content, null, 2);
+
     const newNote: Note = {
       id: Date.now().toString(),
       title: noteTitle,
-      content,
+      content: noteContent,
       type,
       createdAt: new Date(),
       pdfUrl,
@@ -97,7 +151,6 @@ export default function NotesGenerator() {
     setNotes((prev) => ({ ...prev, [type]: newNote }));
     setAllNotes((prev) => [...prev, newNote]);
 
-    // Save to local storage
     localStorage.setItem("allNotes", JSON.stringify([...allNotes, newNote]));
 
     setNoteTitle("");
@@ -113,49 +166,6 @@ export default function NotesGenerator() {
     }
   };
 
-  const generatePDF = (content: string, title: string) => {
-    const pdf = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: "a4",
-    });
-
-    // Set font
-    pdf.setFontSize(12);
-
-    // Add title
-    pdf.setFontSize(16);
-    pdf.text(title || "Notes", 10, 10);
-
-    // Add a line under the title
-    pdf.setLineWidth(0.5);
-    pdf.line(10, 15, 200, 15);
-
-    // Reset font size for content
-    pdf.setFontSize(10);
-
-    // Convert content to plain text with better formatting
-    const plainTextContent = content
-      .replace(/^#+\s*/gm, "") // Remove headers
-      .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold formatting
-      .replace(/\*(.*?)\*/g, "$1") // Remove italic formatting
-      .replace(/`(.*?)`/g, "$1") // Remove code formatting
-      .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Convert links to link text
-      .replace(/^\s*[-*]\s*/gm, "• ") // Convert list markers
-      .replace(/\n{3,}/g, "\n\n"); // Normalize multiple newlines
-
-    // Split text with proper word wrapping
-    const splitText = pdf.splitTextToSize(plainTextContent, 180);
-
-    // Add text with automatic page breaking
-    pdf.text(splitText, 15, 25);
-
-    // Save PDF with a more robust method
-    const pdfDataUri = pdf.output("datauristring");
-    return pdfDataUri;
-  };
-
-  // Update handleFileUpload method
   const handleFileUpload = async () => {
     if (!pdfFile) {
       alert("No PDF file selected.");
@@ -170,22 +180,14 @@ export default function NotesGenerator() {
         "http://localhost:5001/generate_notes_final",
         formData,
         {
-          responseType: "blob",
+          responseType: "json",
         }
       );
 
-      const pdfBlob = new Blob([response.data], { type: "application/pdf" });
-      const pdfUrl = URL.createObjectURL(pdfBlob);
+      const content = response.data.notes;
+      const generatedPdfUrl = generatePDF(content, noteTitle);
 
-      // Read the content of the PDF
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const content = e.target?.result as string;
-        const generatedPdfUrl = generatePDF(content, noteTitle);
-
-        saveNote("upload", JSON.parse(content).notes, generatedPdfUrl);
-      };
-      reader.readAsText(response.data);
+      saveNote("upload", content, generatedPdfUrl);
 
       alert("PDF uploaded and processed successfully!");
     } catch (error) {
@@ -194,7 +196,6 @@ export default function NotesGenerator() {
     }
   };
 
-  // Similar modifications for handleYoutubeSubmit and handleLectureNotesSubmit
   const handleYoutubeSubmit = async () => {
     try {
       const response = await axios.post(
@@ -239,7 +240,6 @@ export default function NotesGenerator() {
     }
   };
 
-  // Update handleCustomNotesGenerate
   const handleCustomNotesGenerate = () => {
     const generatedPdfUrl = generatePDF(customNotes, noteTitle);
     saveNote("custom", customNotes, generatedPdfUrl);
@@ -285,7 +285,6 @@ export default function NotesGenerator() {
       JSON.stringify(allNotes.filter((note) => note.id !== id))
     );
   };
-
   return (
     <div className="min-h-screen bg-purple-50 p-8 relative overflow-hidden">
       <BackgroundBeams />

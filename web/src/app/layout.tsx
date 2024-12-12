@@ -15,16 +15,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={` antialiased`}>
         <SessionProvider>
-          {/* <ChatProvider> */}
-          <ProgressBar
-            height="4px"
-            color="#000000"
-            options={{ showSpinner: false }}
-            shallowRouting
-          />
-          {/* <Navbar /> */}
-          {children}
-          {/* </ChatProvider> */}
+          <ChatProvider>
+            <ProgressBar
+              height="4px"
+              color="#000000"
+              options={{ showSpinner: false }}
+              shallowRouting
+            />
+            {/* <Navbar /> */}
+            {children}
+          </ChatProvider>
         </SessionProvider>
       </body>
     </html>

@@ -191,7 +191,7 @@ const SkeletonFour = () => {
         className="h-full w-1/3 rounded-2xl bg-white p-4 dark:bg-black dark:border-white/[0.1] border border-neutral-200 flex flex-col items-center justify-center"
       >
         <img
-          src="https://pbs.twimg.com/profile_images/1417752099488636931/cs2R59eW_400x400.jpg"
+          src="https://static.vecteezy.com/system/resources/previews/003/337/584/large_2x/default-avatar-photo-placeholder-profile-icon-vector.jpg"
           alt="avatar"
           height="100"
           width="100"
@@ -206,7 +206,7 @@ const SkeletonFour = () => {
       </motion.div>
       <motion.div className="h-full relative z-20 w-1/3 rounded-2xl bg-white p-4 dark:bg-black dark:border-white/[0.1] border border-neutral-200 flex flex-col items-center justify-center">
         <img
-          src="https://pbs.twimg.com/profile_images/1417752099488636931/cs2R59eW_400x400.jpg"
+          src="https://static.vecteezy.com/system/resources/previews/003/337/584/large_2x/default-avatar-photo-placeholder-profile-icon-vector.jpg"
           alt="avatar"
           height="100"
           width="100"
@@ -224,7 +224,7 @@ const SkeletonFour = () => {
         className="h-full w-1/3 rounded-2xl bg-white p-4 dark:bg-black dark:border-white/[0.1] border border-neutral-200 flex flex-col items-center justify-center"
       >
         <img
-          src="https://pbs.twimg.com/profile_images/1417752099488636931/cs2R59eW_400x400.jpg"
+          src="https://static.vecteezy.com/system/resources/previews/003/337/584/large_2x/default-avatar-photo-placeholder-profile-icon-vector.jpg"
           alt="avatar"
           height="100"
           width="100"
@@ -277,7 +277,7 @@ const SkeletonFive = () => {
         className="flex flex-row rounded-2xl border border-neutral-100 dark:border-white/[0.2] p-2  items-start space-x-2 bg-white dark:bg-black"
       >
         <img
-          src="https://pbs.twimg.com/profile_images/1417752099488636931/cs2R59eW_400x400.jpg"
+          src="https://static.vecteezy.com/system/resources/previews/003/337/584/large_2x/default-avatar-photo-placeholder-profile-icon-vector.jpg"
           alt="avatar"
           height="100"
           width="100"
@@ -300,7 +300,7 @@ const SkeletonFive = () => {
 };
 const items = [
   {
-    title: "AI Content Generation",
+    title: "AI Code Generation",
     description: (
       <span className="text-sm">
         Experience the power of AI in generating unique content.
@@ -312,7 +312,7 @@ const items = [
     link: "/code/chat",
   },
   {
-    title: "Automated Proofreading",
+    title: "Code Analyser",
     description: (
       <span className="text-sm">
         Let AI handle the proofreading of your documents.
@@ -323,41 +323,13 @@ const items = [
     icon: <File className="h-4 w-4 text-neutral-500" />,
     link: "/code/code-analyzer",
   },
+
   {
-    title: "Contextual Suggestions",
-    description: (
-      <span className="text-sm">
-        Get AI-powered suggestions based on your writing context.
-      </span>
-    ),
-    header: <SkeletonThree />,
-    className: "md:col-span-1",
-    icon: <Signature className="h-4 w-4 text-neutral-500" />,
-    link: "/code/chat",
-  },
-  {
-    title: "Sentiment Analysis",
-    description: (
-      <span className="text-sm">
-        Understand the sentiment of your text with AI analysis.
-      </span>
-    ),
+    title: "Sketch 2 Code",
+
     header: <SkeletonFour />,
     className: "md:col-span-2",
     icon: <Table className="h-4 w-4 text-neutral-500" />,
     link: "/code/sketch",
-  },
-
-  {
-    title: "Text Summarization",
-    description: (
-      <span className="text-sm">
-        Summarize your lengthy documents with AI technology.
-      </span>
-    ),
-    header: <SkeletonFive />,
-    className: "md:col-span-1",
-    icon: <Box className="h-4 w-4 text-neutral-500" />,
-    link: "/code/chat",
   },
 ];

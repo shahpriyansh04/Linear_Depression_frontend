@@ -44,6 +44,7 @@
     "input-otp": "^1.4.1",
     "is-extendable": "^1.0.1",
     "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "lenis": "^1.1.18",
     "leva": "^0.9.35",
     "lucide-react": "^0.468.0",

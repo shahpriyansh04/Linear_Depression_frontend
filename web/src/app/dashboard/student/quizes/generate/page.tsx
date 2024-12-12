@@ -73,19 +73,6 @@ export default function GenerateQuiz() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Subject Selection (disabled since it's pre-selected) */}
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Subject
-                </label>
-                <Input
-                  type="text"
-                  disabled={true}
-                  placeholder="Enter chapter name"
-                  className="bg-white border-gray-200"
-                  value={formData.subject}
-                />
-              </div>
-
               {/* Chapter Name */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">

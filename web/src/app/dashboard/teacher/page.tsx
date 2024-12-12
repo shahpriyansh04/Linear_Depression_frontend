@@ -249,25 +249,25 @@ export default function TeacherDashboard() {
           }
         );
         console.log(response.data.data);
-
+        setAtRiskStudents(response.data.data);
         // Filter the data based on teacherId and dropoutRisk
-        const filteredData = response.data.data.filter((student) => {
-          if (Array.isArray(student.Teacherid)) {
-            console.log(student.Teacherid);
-            console.log(
-              student.Teacherid.includes(String(session?.user?.id)) &&
-                student.dropoutRisk === false
-            );
-            return (
-              student.Teacherid.includes(String(session?.user?.id)) &&
-              student.dropoutRisk === false
-            );
-          }
-          // Ignore entries where Teacherid is not an array
-          return false;
-        });
-        setAtRiskStudents(filteredData);
-        console.log(filteredData);
+        // const filteredData = response.data.data.filter((student) => {
+        //   if (Array.isArray(student.Teacherid)) {
+        //     console.log(student.Teacherid);
+        //     console.log(
+        //       student.Teacherid.includes(String(session?.user?.id)) &&
+        //         student.dropoutRisk === false
+        //     );
+        //     return (
+        //       student.Teacherid.includes(String(session?.user?.id)) &&
+        //       student.dropoutRisk === false
+        //     );
+        //   }
+        //   // Ignore entries where Teacherid is not an array
+        //   return false;
+        // });
+        // setAtRiskStudents(filteredData);
+        // console.log(filteredData);
       } catch (error) {
         console.error("Error fetching chat data:", error);
       }
