@@ -38,16 +38,47 @@ export default function TeacherCommunication() {
   const [selectedParent, setSelectedParent] = useState<ParentChat | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const [parents, setParents] = useState<ParentChat[]>([]);
   const { data: session } = useSession()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams();
-  const [parent,setParent]=useState([]);
+  
+  useEffect(() => {
+    const fetchParentsAndStudents = async () => {
+      if (!session?.user?.token) return;
 
-  // Hardcoded parents for demo (replace with actual data fetch)
-  const parents: ParentChat[] = [
-    { id: "8", name: "Parent 1" },
-    { id: "9", name: "Parent 2" }
-  ]
+      try {
+        // Fetch all parents
+        const parentsResponse = await axios.get('http://localhost:8000/parent/get-all', {
+          headers: {
+            Authorization: `Bearer ${session.user.token}`,
+          },
+        });
+        const allParents = parentsResponse.data;
+        console.log(parentsResponse.data.data);
+
+        // Fetch all students
+        const studentsResponse = await axios.get('http://localhost:8000/student/get-all', {
+          headers: {
+            Authorization: `Bearer ${session.user.token}`,
+          },
+        });
+        const allStudents = studentsResponse.data.data;
+
+        // Filter parents based on the parentId present in the students' data
+        const filteredParents = allParents.filter(parent => 
+          allStudents.some(student => student.Teacherid.includes(String(session.user.id)) && student.parentId === parent.id)
+        );
+
+        setParents(filteredParents);
+        console.log('Filtered parents:', filteredParents);
+      } catch (error) {
+        console.error('Error fetching parents and students data:', error);
+      }
+    };
+
+    fetchParentsAndStudents();
+  }, [session?.user?.token]);
 
   const fetchMessages = useCallback(async (parentId: string) => {
     if (!session?.user?.token) return;
@@ -105,24 +136,6 @@ export default function TeacherCommunication() {
     return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  
-  
-    useEffect(()=>{
-      axios.get('http://localhost:8000/student/get-all')
-      .then((res)=>{
-        setAllStudentData(res.data)
-        console.log(res.data + "res.data")
-  
-        // Filter the data based on teacherId and dropoutRisk
-        const filteredData = res.data.filter(student => 
-          student.teacherId === session?.user?.id && student.dropoutRisk === true
-        );
-        setAtRiskStudents(filteredData);
-      })
-      .catch((err)=>{
-        console.log(err)
-      })
-    },[])
   useEffect(() => {
     // Read the `parentid` query parameter
     const parentIdFromQuery = searchParams.get('parentid');

@@ -221,7 +221,7 @@ export default function NotesGenerator() {
         throw new Error("Failed to fetch the transcript");
       }
       const transcriptContent = await fileresponse.text();
-
+      console.log(transcriptContent)
       const response = await axios.post(
         "http://localhost:5001/lecture_notes",
         { transcripts: transcriptContent },
