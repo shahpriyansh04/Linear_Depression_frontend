@@ -50,8 +50,8 @@ class _LoginScreenState extends State<LoginScreen> {
   void _validateEmailPassword() async {
     isChecking?.change(true);
     await Future.delayed(const Duration(seconds: 1));
-    if (emailController.text == 'test@test.com' &&
-        passwordController.text == 'password') {
+    if (emailController.text == 'simransota@gmail.com' &&
+        passwordController.text == 'simran') {
       trigSuccess?.change(true);
 
       // Redirect based on role after successful login

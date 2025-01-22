@@ -100,7 +100,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Good Morning, Sullivan! 👋',
+                'Good Morning, Simran! 👋',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

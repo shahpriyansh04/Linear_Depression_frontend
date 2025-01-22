@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:udaan_app/ar_game/ar_pano.dart';
+import 'package:udaan_app/login_screen.dart';
 import 'package:udaan_app/parent/news_feature/resource_list.dart';
 import 'package:udaan_app/student/chat-feature/chat.dart';
 import 'package:udaan_app/student/chat-feature/mentor_profile.dart';
@@ -53,7 +54,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/', // Home page route
       routes: {
-        '/': (context) => StudentHomepage(), // Define the home page
+        '/': (context) => LoginScreen(), // Define the home page
         '/notifications': (context) =>
             NotificationsPage(), // Define notifications route
       },

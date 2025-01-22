@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // Custom Colors (keep the existing color definitions)
 const primaryColor = Color(0xFF512DA8);
@@ -33,113 +35,159 @@ class ScholarshipResultsPage extends StatefulWidget {
 }
 
 class _ScholarshipResultsPageState extends State<ScholarshipResultsPage> {
-  late List<Scholarship> originalScholarships;
-  late List<Scholarship> filteredScholarships;
+  late List<Scholarship> originalScholarships = [];
+  late List<Scholarship> filteredScholarships = [];
   String searchQuery = '';
   String sortBy = 'name';
+  bool isLoading = true;
+  String errorMessage = '';
+
+  Future<void> _fetchScholarships() async {
+    // Completely new method to fetch scholarships from backend
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    try {
+      final queryParams = {
+        'minAmount': widget.aidAmount.start.toString(),
+        'maxAmount': widget.aidAmount.end.toString(),
+        'courseLevel': widget.courseLevel,
+        'location': widget.location,
+        'fieldOfStudy': widget.fieldOfStudy,
+      };
+
+      final uri =
+          Uri.http('http://127.0.0.1:5001', '/scholarship_info', queryParams);
+
+      final response = await http.get(uri);
+      print(response);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> scholarshipData = json.decode(response.body);
+        print('Scholarship data fetched: $scholarshipData');
+        // Helper methods to parse specific fields
+
+        DateTime _parseDate(String? dateString) {
+          if (dateString == null || dateString.isEmpty) return DateTime.now();
+          try {
+            final parts = dateString.split('/');
+            return DateTime(
+                int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
+          } catch (e) {
+            return DateTime.now();
+          }
+        }
+
+        String _parseGender(String? faq) {
+          if (faq == null) return 'All';
+          return faq.contains('No, this scholarship is open for all gender')
+              ? 'All'
+              : 'Specific';
+        }
+
+        int _parseMaxIncome(String? criteria) {
+          if (criteria == null) return 0;
+          final match = RegExp(r'less than (\d+)').firstMatch(criteria);
+          return int.tryParse(criteria.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+        }
+
+        String _parseLocation(String? faq) {
+          if (faq == null) return '';
+          final match = RegExp(
+                  r'this scholarship is open for colleges in (\w+) location only')
+              .firstMatch(faq);
+          return match?.group(1) ?? '';
+        }
+
+        String _parseAcademicLevel(String? criteria) {
+          if (criteria == null) return '';
+          final courseLevel =
+              RegExp(r'Course Level : (\w+)').firstMatch(criteria);
+          return courseLevel?.group(1) ?? '';
+        }
+
+        String _parseEligibility(String? criteria, String? faq) {
+          if (criteria == null || faq == null) return '';
+          return [
+            'Minimum 70% marks',
+            'Students in 1st, 2nd, 3rd year',
+            'Family income less than 5 lakhs'
+          ].join(', ');
+        }
+
+        String _parseRequiredDocuments(String? instruction) {
+          if (instruction == null) return '';
+          final docs = RegExp(r'\d\) ([^\r\n]+)').allMatches(instruction);
+          return docs.map((match) => match.group(1) ?? '').toList().join(', ');
+        }
+
+        String _parseContactEmail(String? contactInfo) {
+          if (contactInfo == null) return '';
+          final match = RegExp(r':\s*(\S+@\S+)').firstMatch(contactInfo);
+          return match?.group(1) ?? '';
+        }
+
+        String _parseHelpdesk(String? faq) {
+          if (faq == null) return '';
+          final match =
+              RegExp(r'Vidyasaarathi Helpdesk Number\?\r\n(\d+[-\d]*)')
+                  .firstMatch(faq);
+          return match?.group(1) ?? '';
+        }
+
+        setState(() {
+          originalScholarships = scholarshipData
+              .map((data) => Scholarship(
+                    name: data['Scholarship Name'] ?? '',
+                    amount: int.tryParse(data['Scholarship Amount (INR)']
+                                ?.replaceAll(RegExp(r'[^\d.]'), '') ??
+                            '0') ??
+                        0,
+                    gender: _parseGender(data['Frequently Asked Questions']),
+                    maxIncome:
+                        _parseMaxIncome(data['Minimum Eligibility Criteria']),
+                    location:
+                        _parseLocation(data['Frequently Asked Questions']),
+                    academicLevel: _parseAcademicLevel(
+                        data['Minimum Eligibility Criteria']),
+                    applicationStart: _parseDate(data['Start Date From']),
+                    applicationEnd: _parseDate(data['Valid Upto']),
+                    description: data['Description'] ?? '',
+                    eligibility: _parseEligibility(
+                        data['Minimum Eligibility Criteria'],
+                        data['Frequently Asked Questions']),
+                    requiredDocuments: _parseRequiredDocuments(
+                        data['Certificate Instruction']),
+                    contactEmail: _parseContactEmail(data['Contact Email-ID']),
+                    helpdesk:
+                        _parseHelpdesk(data['Frequently Asked Questions']),
+                    isEligible: true,
+                  ))
+              .toList();
+          _applyAllFilters();
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          errorMessage = 'Failed to load scholarships. Please try again.';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'An error occurred. Please check your connection.';
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     // Predefined list of scholarships
-    originalScholarships = [
-      Scholarship(
-        name: 'Vinod Handa Scholarship for Class 1st to Class 8th (2024-25)',
-        amount: 15000,
-        gender: 'Female',
-        maxIncome: 500000,
-        location: 'Dehradun',
-        academicLevel: 'Class 1-8',
-        applicationStart: DateTime(2024, 11, 13),
-        applicationEnd: DateTime(2025, 1, 12),
-        description:
-            'Epsilon Carbon Pvt Ltd, through Epsilon Foundation, supports meritorious students to overcome financial constraints. This scholarship focuses on quality education for female students in Dehradun.',
-        eligibility:
-            'Female students in Dehradun, family income below 5 lakhs, studying in classes 1-8',
-        requiredDocuments:
-            'Identity proof, Address proof, Income certificate, Latest marksheet',
-        contactEmail: 'epsilon@scholarship.com',
-        helpdesk: '1800-123-4567',
-        isEligible: true,
-      ),
-      Scholarship(
-        name: 'National Talent Search Scholarship',
-        amount: 50000,
-        gender: 'Any',
-        maxIncome: 1500000,
-        location: 'All India',
-        academicLevel: 'Class 10',
-        applicationStart: DateTime(2024, 8, 1),
-        applicationEnd: DateTime(2024, 9, 30),
-        description:
-            'The National Talent Search Examination (NTSE) is a national-level scholarship program to identify and nurture talented students across India.',
-        eligibility:
-            'Students studying in Class 10, All genders, Family income below 15 lakhs',
-        requiredDocuments:
-            'School ID, Aadhar Card, Income certificate, Class 9 marksheet',
-        contactEmail: 'ntse@gov.in',
-        helpdesk: '011-2696-2580',
-        isEligible: false,
-      ),
-      Scholarship(
-        name: 'AICTE Pragati Scholarship for Girls',
-        amount: 30000,
-        gender: 'Female',
-        maxIncome: 800000,
-        location: 'All India',
-        academicLevel: 'UG Engineering',
-        applicationStart: DateTime(2024, 9, 15),
-        applicationEnd: DateTime(2024, 10, 31),
-        description:
-            'AICTE Pragati Scholarship aims to provide assistance for advancement of girls to pursue technical education.',
-        eligibility:
-            'First year female students of AICTE approved institutions, Family income below 8 lakhs',
-        requiredDocuments:
-            'Aadhar Card, Income certificate, JEE rank card, College admission letter',
-        contactEmail: 'pragati-scholarship@aicte-india.org',
-        helpdesk: '011-2958-1000',
-        isEligible: true,
-      ),
-      Scholarship(
-        name: 'Kishore Vaigyanik Protsahan Yojana (KVPY)',
-        amount: 80000,
-        gender: 'Any',
-        maxIncome: 2500000,
-        location: 'All India',
-        academicLevel: 'Class 11-12, UG',
-        applicationStart: DateTime(2024, 7, 1),
-        applicationEnd: DateTime(2024, 8, 15),
-        description:
-            'KVPY is an on-going National Program of Fellowship in Basic Sciences, initiated and funded by the Department of Science and Technology, Government of India.',
-        eligibility:
-            'Students in 11th, 12th standard or 1st year of any UG Program in Basic Sciences',
-        requiredDocuments:
-            'School/College ID, Aadhar Card, Latest marksheet, Recommendation letter',
-        contactEmail: 'kvpy@iisc.ac.in',
-        helpdesk: '080-2293-2975',
-        isEligible: true,
-      ),
-      Scholarship(
-        name: 'Post-Matric Scholarship for SC Students',
-        amount: 25000,
-        gender: 'Any',
-        maxIncome: 250000,
-        location: 'All India',
-        academicLevel: 'Class 11-12, UG, PG',
-        applicationStart: DateTime(2024, 8, 1),
-        applicationEnd: DateTime(2024, 10, 31),
-        description:
-            'This scholarship aims to support Scheduled Caste students studying at post-matriculation or post-secondary stage to complete their education.',
-        eligibility:
-            'SC students, Family income below 2.5 lakhs, Studying in recognized institutions',
-        requiredDocuments:
-            'Caste certificate, Income certificate, Previous year marksheet, Institution verification form',
-        contactEmail: 'sc-scholarship@gov.in',
-        helpdesk: '1800-111-965',
-        isEligible: false,
-      ),
-    ];
-    
+    _fetchScholarships();
     // Apply initial filters
     _applyAllFilters();
   }
@@ -152,28 +200,34 @@ class _ScholarshipResultsPageState extends State<ScholarshipResultsPage> {
             scholarship.amount <= widget.aidAmount.end;
 
         // Filter by funding types (scholarships)
-        bool scholarshipTypeMatch = widget.scholarships.isEmpty || 
-            widget.scholarships.any((type) => 
+        bool scholarshipTypeMatch = widget.scholarships.isEmpty ||
+            widget.scholarships.any((type) =>
                 scholarship.name.toLowerCase().contains(type.toLowerCase()));
 
         // Filter by course level
-        bool courseLevelMatch = widget.courseLevel.isEmpty || 
-            scholarship.academicLevel.toLowerCase().contains(widget.courseLevel.toLowerCase());
+        bool courseLevelMatch = widget.courseLevel.isEmpty ||
+            scholarship.academicLevel
+                .toLowerCase()
+                .contains(widget.courseLevel.toLowerCase());
 
         // Filter by location
-        bool locationMatch = widget.location.isEmpty || 
-            scholarship.location.toLowerCase().contains(widget.location.toLowerCase());
+        bool locationMatch = widget.location.isEmpty ||
+            scholarship.location
+                .toLowerCase()
+                .contains(widget.location.toLowerCase());
 
         // Filter by field of study
-        bool fieldOfStudyMatch = widget.fieldOfStudy.isEmpty || 
-            scholarship.name.toLowerCase().contains(widget.fieldOfStudy.toLowerCase());
+        bool fieldOfStudyMatch = widget.fieldOfStudy.isEmpty ||
+            scholarship.name
+                .toLowerCase()
+                .contains(widget.fieldOfStudy.toLowerCase());
 
         // Return true only if all applied filters match
-        return amountMatch && 
-               scholarshipTypeMatch && 
-               courseLevelMatch && 
-               locationMatch && 
-               fieldOfStudyMatch;
+        return amountMatch &&
+            scholarshipTypeMatch &&
+            courseLevelMatch &&
+            locationMatch &&
+            fieldOfStudyMatch;
       }).toList();
 
       // Apply sorting
@@ -229,14 +283,39 @@ class _ScholarshipResultsPageState extends State<ScholarshipResultsPage> {
           _buildSearchAndSort(),
           _buildHeader(context),
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: filteredScholarships.length,
-              itemBuilder: (context, index) {
-                return ScholarshipCard(
-                    scholarship: filteredScholarships[index]);
-              },
-            ),
+            child: isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: primaryColor,
+                    ),
+                  )
+                : errorMessage.isNotEmpty
+                    ? Center(
+                        child: Column(
+                          children: [
+                            Text(errorMessage),
+                            ElevatedButton(
+                              onPressed: _fetchScholarships,
+                              child: Text('Retry'),
+                            )
+                          ],
+                        ),
+                      )
+                    : filteredScholarships.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No scholarships found matching your criteria.',
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            itemCount: filteredScholarships.length,
+                            itemBuilder: (context, index) {
+                              return ScholarshipCard(
+                                  scholarship: filteredScholarships[index]);
+                            },
+                          ),
           ),
         ],
       ),
@@ -355,8 +434,6 @@ class _ScholarshipResultsPageState extends State<ScholarshipResultsPage> {
     );
   }
 }
-
-
 
 class ScholarshipCard extends StatefulWidget {
   final Scholarship scholarship;
@@ -491,17 +568,22 @@ class _ScholarshipCardState extends State<ScholarshipCard> {
             ),
           ),
           SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildHighlightItem(Icons.person, widget.scholarship.gender),
-              _buildHighlightItem(Icons.attach_money,
-                  'Income < ₹${NumberFormat('#,##,###').format(widget.scholarship.maxIncome)}'),
-              _buildHighlightItem(
-                  Icons.location_on, widget.scholarship.location),
-              _buildHighlightItem(
-                  Icons.school, widget.scholarship.academicLevel),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildHighlightItem(Icons.person, widget.scholarship.gender),
+                SizedBox(width: 8),
+                _buildHighlightItem(Icons.attach_money,
+                    'Income < ₹${NumberFormat('#,##,###').format(widget.scholarship.maxIncome)}'),
+                SizedBox(width: 8),
+                _buildHighlightItem(
+                    Icons.location_on, widget.scholarship.location),
+                SizedBox(width: 8),
+                _buildHighlightItem(
+                    Icons.school, widget.scholarship.academicLevel),
+              ],
+            ),
           ),
           SizedBox(height: 12),
           Container(
@@ -749,9 +831,6 @@ class _ScholarshipCardState extends State<ScholarshipCard> {
     );
   }
 }
-
-
-
 
 class Scholarship {
   final String name;

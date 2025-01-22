@@ -281,11 +281,11 @@ class _StudentHomepageState extends State<StudentHomepage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FutureBuilder<String>(
-                      future: _translateText('John Doe'),
+                      future: _translateText('Simran'),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.done) {
                           return Text(
-                            snapshot.data ?? 'John Doe',
+                            snapshot.data ?? 'Simran',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,

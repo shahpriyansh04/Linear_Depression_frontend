@@ -10,7 +10,7 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   bool _showDropoutAlert = false;
   final Map<String, Map<String, dynamic>> _studentData = {
-    'John Doe': {
+    'Simran': {
       'attendance': 0.75,
       'grades': 0.65,
       'participation': 0.50,
@@ -85,13 +85,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       'id': '7',
       'section': 'Alert',
       'subject': 'Dropout Risk Alert',
-      'message': 'Student John Doe has a high risk of dropping out.',
+      'message': 'Student Simran has a high risk of dropping out.',
       'reminder': 'Please review the attendance and performance.',
       'icon': Icons.warning_amber_rounded,
       'color': Colors.red[50],
       'detail': {
         'risk': 'High',
-        'message': 'John has missed several classes and has poor grades.',
+        'message': 'Simran has missed several classes and has poor grades.',
         'teacher': 'Mr. Smith',
         'time': 'Nov 30, 2024'
       }
@@ -223,7 +223,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   void _showDropoutRiskAlert(Map<String, dynamic> notification) {
-    String studentName = 'John Doe';
+    String studentName = 'Simran';
     String dropoutRisk = notification['detail']['risk'] ?? 'Unknown';
     String riskMessage =
         notification['detail']['message'] ?? 'No further details available';
